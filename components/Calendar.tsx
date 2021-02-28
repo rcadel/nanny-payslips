@@ -19,7 +19,7 @@ const Calendar: React.FC<{ calendar: Calendar }> = ({ calendar }) => {
       onClick={() => {
         setCalendar(calendar);
       }}
-      style={{ textDecoration: "underlined" }}
+      style={{ textDecoration: "underline", cursor: "pointer" }}
     >
       {calendar.summary}
     </div>
