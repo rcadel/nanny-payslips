@@ -3,7 +3,7 @@ import * as React from "react";
 // Client ID and API key from the Developer Console
 var CLIENT_ID =
   "941034406341-pncbag2cavgf9p6dr3nh44vhn98a3v3l.apps.googleusercontent.com";
-var API_KEY = "2283iq7IOTL6cgKVLpT3luMV";
+var API_KEY = process.env.API_KEY;
 
 // Array of API discovery doc URLs for APIs used by the quickstart
 var DISCOVERY_DOCS = [
