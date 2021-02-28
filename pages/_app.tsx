@@ -1,6 +1,6 @@
 import * as React from "react";
+import { ClientProvider } from "../components/ClientProvider";
 import "../styles/globals.css";
-import { ClientProvider } from "./ClientProvider";
 
 function MyApp({ Component, pageProps }) {
   return (

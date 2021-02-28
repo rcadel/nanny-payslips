@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useClient } from "./ClientProvider";
+import { useClient } from "../components/ClientProvider";
 
 const AuthorizeButton = () => {
   const client = useClient();

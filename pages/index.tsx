@@ -1,6 +1,6 @@
 import Head from "next/head";
+import { useClient } from "../components/ClientProvider";
 import styles from "../styles/Home.module.css";
-import { useClient } from "./ClientProvider";
 import GoogleAuthButton from "./GoogleAuthButton";
 
 export default function Home() {
