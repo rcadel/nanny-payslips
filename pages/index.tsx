@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { useEffect, useRef } from "react";
+import { CalendarList } from "../components/Calendar";
 import { useClient } from "../components/ClientProvider";
 import styles from "../styles/Home.module.css";
 import GoogleAuthButton from "./GoogleAuthButton";
@@ -30,6 +31,7 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Add access to google calendar</h1>
         <GoogleAuthButton />
+        <CalendarList />
       </main>
       <script
         ref={ref}
