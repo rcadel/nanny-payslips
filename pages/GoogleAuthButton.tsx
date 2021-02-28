@@ -3,14 +3,24 @@ import { useClient } from "../components/ClientProvider";
 
 const AuthorizeButton = () => {
   const client = useClient();
+  const handleClick = () => {
+    client.client.auth2.getAuthInstance().signIn();
+  };
   return !client.isSignedIn ? (
-    <button id="authorize_button">Authorize</button>
+    <button id="authorize_button" onClick={handleClick}>
+      Authorize
+    </button>
   ) : null;
 };
 const SignoutButton = () => {
   const client = useClient();
+  const handleClick = () => {
+    client.client.auth2.getAuthInstance().signOut();
+  };
   return client.isSignedIn ? (
-    <button id="signout_button">Sign Out</button>
+    <button id="signout_button" onClick={handleClick}>
+      Sign Out
+    </button>
   ) : null;
 };
 
