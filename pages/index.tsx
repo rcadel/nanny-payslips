@@ -8,7 +8,6 @@ import GoogleAuthButton from "./GoogleAuthButton";
 export default function Home() {
   const client = useClient();
   const handleOnLoad = () => {
-    console.log("loaded");
     client.setClient((window as any).gapi);
   };
   const ref = useRef<HTMLScriptElement>();
