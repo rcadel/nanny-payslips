@@ -28,7 +28,13 @@ export const useClient = () => {
   return context;
 };
 
-async function initClient(gapi: any, setIsSignedIn: React.Dispatch<boolean>) {
+async function initClient({
+  gapi,
+  setIsSignedIn,
+}: {
+  gapi: any;
+  setIsSignedIn: React.Dispatch<boolean>;
+}) {
   try {
     const gapiInit = await gapi.client.init({
       apiKey: API_KEY,
@@ -50,7 +56,8 @@ export const ClientProvider: React.FC = ({ children }) => {
   const [client, setClientInState] = React.useState(undefined);
   const [isSignedIn, setIsSignedIn] = React.useState(false);
   const setClient: React.Dispatch<any> = (gapi: any) => {
-    gapi.load("client:auth2", () => initClient(gapi, setIsSignedIn));
+    setClientInState(gapi);
+    gapi.load("client:auth2", () => initClient({ gapi, setIsSignedIn }));
   };
   return (
     <ClientContext.Provider value={{ client, setClient, isSignedIn }}>

@@ -6,7 +6,7 @@ const AuthorizeButton = () => {
   const handleClick = () => {
     client.client.auth2.getAuthInstance().signIn();
   };
-  return !client.isSignedIn ? (
+  return !client.isSignedIn && client.client ? (
     <button id="authorize_button" onClick={handleClick}>
       Authorize
     </button>
@@ -17,7 +17,7 @@ const SignoutButton = () => {
   const handleClick = () => {
     client.client.auth2.getAuthInstance().signOut();
   };
-  return client.isSignedIn ? (
+  return client.isSignedIn && client ? (
     <button id="signout_button" onClick={handleClick}>
       Sign Out
     </button>
