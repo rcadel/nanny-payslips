@@ -27,6 +27,7 @@ export const CalendarList: React.FC = () => {
         showDeleted: false,
         showHidden: false,
       });
+      console.log(response.results);
       setCalendars(response.results?.items);
     };
     if (isSignedIn && client) {
