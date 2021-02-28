@@ -6,6 +6,11 @@ interface Calendar {
   id: string;
 }
 
+interface CalendarListResponse {
+  items: Calendar[];
+  nextSyncToken: string;
+}
+
 const Calendar: React.FC<{ calendar: Calendar }> = ({ calendar }) => {
   return <div>{calendar.summary}</div>;
 };
@@ -15,12 +20,14 @@ export const CalendarList: React.FC = () => {
   const [calendars, setCalendars] = useState<{ summary: string }[]>();
   useEffect(() => {
     const fetchCalendars = async () => {
-      const response = await client.client.calendar.calendarList.list({
+      const response: {
+        results: CalendarListResponse | undefined;
+      } = await client.client.calendar.calendarList.list({
         maxResults: 10,
         showDeleted: false,
         showHidden: false,
       });
-      setCalendars(response.results);
+      setCalendars(response.results?.items);
     };
     if (isSignedIn && client) {
       fetchCalendars();
