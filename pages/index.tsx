@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { useEffect, useRef } from "react";
 import { useClient } from "../components/ClientProvider";
 import styles from "../styles/Home.module.css";
 import GoogleAuthButton from "./GoogleAuthButton";
@@ -6,8 +7,19 @@ import GoogleAuthButton from "./GoogleAuthButton";
 export default function Home() {
   const client = useClient();
   const handleOnLoad = () => {
-    client.setClient((document as any).gapi);
+    console.log("loaded");
+    client.setClient((window as any).gapi);
   };
+  const ref = useRef<HTMLScriptElement>();
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.onload = handleOnLoad;
+      // if already defined
+      if ((window as any).gapi) {
+        handleOnLoad();
+      }
+    }
+  }, [ref.current, handleOnLoad]);
   return (
     <div className={styles.container}>
       <Head>
@@ -20,6 +32,7 @@ export default function Home() {
         <GoogleAuthButton />
       </main>
       <script
+        ref={ref}
         async
         defer
         src="https://apis.google.com/js/api.js"
