@@ -6,7 +6,7 @@ import GoogleAuthButton from "./GoogleAuthButton";
 export default function Home() {
   const client = useClient();
   const handleOnLoad = () => {
-    client.setClient(document.gapi);
+    client.setClient((document as any).gapi);
   };
   return (
     <div className={styles.container}>
