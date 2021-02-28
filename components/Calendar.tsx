@@ -21,14 +21,14 @@ export const CalendarList: React.FC = () => {
   useEffect(() => {
     const fetchCalendars = async () => {
       const response: {
-        results: CalendarListResponse | undefined;
+        result: CalendarListResponse | undefined;
       } = await client.client.calendar.calendarList.list({
         maxResults: 10,
         showDeleted: false,
         showHidden: false,
       });
-      console.log(response.results);
-      setCalendars(response.results?.items);
+      console.log(response.result);
+      setCalendars(response.result?.items);
     };
     if (isSignedIn && client) {
       fetchCalendars();
