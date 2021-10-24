@@ -28,7 +28,8 @@ const Calendar: React.FC<{ calendar: Calendar }> = ({ calendar }) => {
 
 export const CalendarList: React.FC = () => {
   const { isSignedIn, client } = useClient();
-  const [calendars, setCalendars] = useState<{ summary: string }[]>();
+  const [calendars, setCalendars] = useState<Calendar[]>();
+  const { calendar } = useCalendar();
   useEffect(() => {
     const fetchCalendars = async () => {
       const response: {
@@ -45,12 +46,15 @@ export const CalendarList: React.FC = () => {
       fetchCalendars();
     }
   }, [isSignedIn, client, setCalendars]);
-  return calendars ? (
-    <>
-      {calendars.map((calendar: Calendar) => (
-        <Calendar key={calendar.id} calendar={calendar} />
-      ))}
-    </>
+  return calendars && !calendar ? (
+    <div>
+      <h2>Choisissez un calendrier</h2>
+      <div>
+        {calendars.map((calendar: Calendar) => (
+          <Calendar key={calendar.id} calendar={calendar} />
+        ))}
+      </div>
+    </div>
   ) : null;
 };
 
