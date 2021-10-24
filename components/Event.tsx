@@ -108,6 +108,7 @@ type NannysDay = {
   morning: ChildDeposit;
   noon: ChildDeposit;
   afternoon: ChildDeposit;
+  totalHour: number;
   expense: {
     generalFees: boolean;
     lunch: boolean;
@@ -118,6 +119,20 @@ type NannysDay = {
 type EventCSV = {
   scheduled: NannysDay;
   done: NannysDay;
+};
+
+const timeSpend = (arrival?: Date, departure?: Date) => {
+  if (!arrival && !departure) {
+    return 0;
+  } else {
+    const startOfThisDay = arrival
+      ? startOfDay(arrival)
+      : startOfDay(departure as Date);
+    return (
+      (departure || startOfThisDay).getTime() -
+      (arrival || startOfThisDay).getTime()
+    );
+  }
 };
 
 const eventToNannysDay = (event?: Event): NannysDay => {
@@ -133,14 +148,19 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     event?.end && getHours(event.end) > 12 && getHours(event.end) < 14
       ? event.end
       : undefined;
-  const afterNoonArrival =
-    event?.start && getHours(event.start) >= 14 ? event.start : undefined;
+  const afterNoonArrival = morningArrival && morningDeparture;
+  event?.start && getHours(event.start) >= 14 ? event.start : undefined;
   const afterNoonDeparture =
     event?.end && getHours(event.end) >= 14 ? event.end : undefined;
+  const totalHour =
+    timeSpend(morningArrival, morningDeparture) +
+    timeSpend(noonArrival, noonDeparture) +
+    timeSpend(afterNoonArrival, afterNoonDeparture);
   return {
     morning: { arrival: morningArrival, departure: morningDeparture },
     noon: { arrival: noonArrival, departure: noonDeparture },
     afternoon: { arrival: afterNoonArrival, departure: afterNoonDeparture },
+    totalHour,
     expense: {
       generalFees: !!(
         (morningArrival || noonArrival || afterNoonArrival) &&
@@ -249,7 +269,10 @@ const EventCSVToDisplay: React.FC<{
                 formatPattern,
               }),
               "",
-              "",
+              formatDate({
+                date: new Date(startOfDay(day).getTime() + nannysDay.totalHour),
+                formatPattern: "HH:mm",
+              }),
               "",
               "",
               "",
