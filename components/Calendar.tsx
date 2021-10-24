@@ -59,7 +59,7 @@ export const CalendarList: React.FC = () => {
 };
 
 const CalendarContext = React.createContext<
-  { calendar: Calendar; setCalendar: React.Dispatch<Calendar> } | undefined
+  { calendar?: Calendar; setCalendar: React.Dispatch<Calendar> } | undefined
 >(undefined);
 
 export const useCalendar = () => {
@@ -71,7 +71,9 @@ export const useCalendar = () => {
 };
 
 export const CalendarProvider: React.FC = ({ children }) => {
-  const [calendar, setCalendar] = React.useState<Calendar>(undefined);
+  const [calendar, setCalendar] = React.useState<Calendar | undefined>(
+    undefined
+  );
   return (
     <CalendarContext.Provider value={{ calendar, setCalendar }}>
       {children}

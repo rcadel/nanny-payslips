@@ -11,7 +11,7 @@ export default function Home() {
   const handleOnLoad = () => {
     client.setClient((window as any).gapi);
   };
-  const ref = useRef<HTMLScriptElement>();
+  const ref = useRef<HTMLScriptElement>(null);
   useEffect(() => {
     if (ref.current) {
       ref.current.onload = handleOnLoad;
