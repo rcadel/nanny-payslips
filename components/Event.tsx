@@ -207,7 +207,7 @@ export const EventList: React.FC = () => {
   const { client } = useClient();
   const [events, setEvents] = React.useState<Event[]>();
   const [calendarLimits, setCalendarLimits] =
-    React.useState<{ start: Date; end: Date }>();
+    React.useState<{ start: Date; end: Date; name: string }>();
   React.useEffect(() => {
     if (calendar && client && calendarLimits) {
       const fetchEventList = async () => {
@@ -222,6 +222,7 @@ export const EventList: React.FC = () => {
           singleEvents: false,
           timeMin: formatISO(calendarLimits.start),
           timeMax: formatISO(calendarLimits.end),
+          q: calendarLimits.name,
         });
         const recurringEvtIds = response.result?.items
           ?.filter((evt) => evt.recurrence)
@@ -295,17 +296,25 @@ export const EventList: React.FC = () => {
       onSubmit={handleSubmit((form) => {
         const start = startOfDay(new Date(form.year, form.month, 1));
         const end = endOfMonth(start);
-        setCalendarLimits({ start, end });
+        setCalendarLimits({ start, end, name: form.name as string });
       })}
     >
-      <label>month</label>
-      <select {...register("month")}>
-        {months.map((m) => (
-          <option value={m.value}>{m.label}</option>
-        ))}
-      </select>
-      <label>year</label>
-      <input id="year" {...register("year")} />
+      <label>
+        month
+        <select {...register("month")}>
+          {months.map((m) => (
+            <option value={m.value}>{m.label}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        year
+        <input id="year" {...register("year")} />
+      </label>
+      <label>
+        name
+        <input id="name" {...register("name")} />
+      </label>
       <input type="submit" value="Valider" />
     </form>
   ) : null;
