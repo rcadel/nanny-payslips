@@ -17,6 +17,9 @@ import { useForm } from "react-hook-form";
 import { useCalendar } from "./Calendar";
 import { useClient } from "./ClientProvider";
 
+const afterNoonMealHour = 16;
+const lunchHour = 12;
+
 interface GDate {
   dateTime: string;
   timeZone?: string;
@@ -105,6 +108,11 @@ type NannysDay = {
   morning: ChildDeposit;
   noon: ChildDeposit;
   afternoon: ChildDeposit;
+  expense: {
+    generalFees: boolean;
+    lunch: boolean;
+    afterNoonMeal: boolean;
+  };
 };
 
 type EventCSV = {
@@ -133,6 +141,16 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     morning: { arrival: morningArrival, departure: morningDeparture },
     noon: { arrival: noonArrival, departure: noonDeparture },
     afternoon: { arrival: afterNoonArrival, departure: afterNoonDeparture },
+    expense: {
+      generalFees: !!(
+        (morningArrival || noonArrival || afterNoonArrival) &&
+        (morningDeparture || noonDeparture || afterNoonDeparture)
+      ),
+      afterNoonMeal: !!(
+        afterNoonDeparture && getHours(afterNoonDeparture) > afterNoonMealHour
+      ),
+      lunch: !!(morningArrival && getHours(morningArrival) < lunchHour),
+    },
   };
 };
 
@@ -155,7 +173,23 @@ const EventCSVToDisplay: React.FC<{
           if (dayEvents && dayEvents.length > 1) {
             throw new Error("not implemented");
           }
-          let row: (string | undefined)[] = [];
+          let row: [
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string,
+            string
+          ] = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
           if (dayEvents && dayEvents.length === 1) {
             const formatPattern = "HH:mm";
             const nannysDay = eventToNannysDay(dayEvents[0]);
@@ -169,6 +203,15 @@ const EventCSVToDisplay: React.FC<{
                 date: nannysDay.afternoon.departure,
                 formatPattern,
               }),
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              nannysDay.expense.generalFees ? "1" : "",
+              nannysDay.expense.lunch ? "1" : "",
+              nannysDay.expense.afterNoonMeal ? "1" : "",
             ];
           }
           return row.join(";");
