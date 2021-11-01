@@ -14,6 +14,28 @@ import {
 import { utcToZonedTime } from "date-fns-tz";
 import * as React from "react";
 import { useForm } from "react-hook-form";
+import {
+  baseSalaireBrutCSGRDS,
+  mealFees,
+  rawHourTarif,
+  snackFees,
+  txAccidentTravail,
+  txAllocFamilliale,
+  txAssedic,
+  txCEG,
+  txCSGDeduc,
+  txCSGRDS,
+  txExonerationHCHS,
+  txFNAL,
+  txFormation,
+  txGeneralFees,
+  txIRCEMPrev,
+  txIRCEMRetraite,
+  txMaladieSolidarite,
+  txVacation,
+  txVieillesseDepla,
+  txVieillessePlafonne,
+} from "../pages/data";
 import { useCalendar } from "./Calendar";
 import { useClient } from "./ClientProvider";
 
@@ -156,6 +178,10 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     timeSpend(morningArrival, morningDeparture) +
     timeSpend(noonArrival, noonDeparture) +
     timeSpend(afterNoonArrival, afterNoonDeparture);
+  console.log(
+    afterNoonDeparture,
+    !!(afterNoonDeparture && getHours(afterNoonDeparture) > afterNoonMealHour)
+  );
   return {
     morning: { arrival: morningArrival, departure: morningDeparture },
     noon: { arrival: noonArrival, departure: noonDeparture },
@@ -174,10 +200,72 @@ const eventToNannysDay = (event?: Event): NannysDay => {
   };
 };
 
+const roundTo2Decimal = (num: number) =>
+  Math.round((num + Number.EPSILON) * 100) / 100;
+
+const computePay = (hoursMade: number, forfait?: number, vacationHours = 0) => {
+  const complementaryHoursToPay = forfait ? hoursMade - forfait : 0;
+  const hoursToPay = forfait ? forfait : hoursMade;
+  const hoursToPayAmount = hoursToPay * rawHourTarif;
+  const complementaryHoursToPayAmount = complementaryHoursToPay * rawHourTarif;
+  const vacationAmount = hoursToPayAmount * txVacation;
+  const vacationComplementaryHourAmount = complementaryHoursToPay * txVacation;
+
+  const rawSalary =
+    hoursToPayAmount +
+    complementaryHoursToPayAmount +
+    vacationComplementaryHourAmount +
+    vacationAmount;
+  console.log({
+    complementaryHoursToPay,
+    hoursToPay,
+    vacationComplementaryHourAmount,
+    vacationAmount,
+  });
+  const rawSalaryWithoutHCHS = hoursToPayAmount + vacationAmount;
+  const baseRAwCSGRDS = rawSalary * baseSalaireBrutCSGRDS;
+  const maladieSolidarite = rawSalary * txMaladieSolidarite;
+  const vieillesseDeplafonnee = rawSalary * txVieillesseDepla;
+  const vieillessePlafonnee = rawSalary * txVieillessePlafonne;
+  const allocationFamilliale = rawSalary * txAllocFamilliale;
+  const accidentDutravail = rawSalary * txAccidentTravail;
+  const FNAL = rawSalary * txFNAL;
+  const IRCEMPrevoyance = rawSalary * txIRCEMPrev;
+  const IRCEMRetraite = rawSalary * txIRCEMRetraite;
+  const CEG = rawSalary * txCEG;
+  const Assedic = rawSalary * txAssedic;
+  const formation = rawSalary * txFormation;
+  const exonerationHC = (rawSalary - rawSalaryWithoutHCHS) * txExonerationHCHS;
+  const CGSRDSNonDeduc = baseRAwCSGRDS * txCSGRDS;
+  const CSGDeduc = baseRAwCSGRDS * txCSGDeduc;
+  const charges = [
+    maladieSolidarite,
+    vieillesseDeplafonnee,
+    vieillessePlafonnee,
+    allocationFamilliale,
+    accidentDutravail,
+    FNAL,
+    IRCEMPrevoyance,
+    IRCEMRetraite,
+    CEG,
+    Assedic,
+    formation,
+    exonerationHC,
+    CGSRDSNonDeduc,
+    CSGDeduc,
+  ];
+  const payToPaid =
+    rawSalary -
+    charges.reduce((acc, charge) => acc + roundTo2Decimal(charge), 0);
+  return { rawSalary, rawSalaryWithoutHCHS, payToPaid };
+};
+
 const EventCSVToDisplay: React.FC<{
   events: Event[];
   daysOfSelectedMonth: Date[];
-}> = ({ events, daysOfSelectedMonth }) => {
+  forfait?: number;
+  isComplementaryHours: boolean;
+}> = ({ events, daysOfSelectedMonth, forfait, isComplementaryHours }) => {
   const [downloadClicked, setDownloadClicked] = React.useState(false);
   React.useEffect(() => {
     if (downloadClicked) {
@@ -309,14 +397,47 @@ const EventCSVToDisplay: React.FC<{
       }
     }
   }, [downloadClicked]);
+  const nbHours =
+    events.reduce(
+      (acc, event) =>
+        acc + ((event.end?.getTime() || 0) - (event.start?.getTime() || 0)),
+      0
+    ) /
+    (1000 * 60 * 60);
+  console.log({ nbHours });
+  const nanyDays = events.map(eventToNannysDay);
+  const generalFees =
+    nanyDays.filter((nanyDay) => nanyDay.expense.generalFees).length *
+    txGeneralFees;
+  const mealFeesAmount =
+    nanyDays.filter((nanyDay) => nanyDay.expense.lunch).length * mealFees;
+  const snackFeesAmount =
+    nanyDays.filter((nanyDay) => nanyDay.expense.afterNoonMeal).length *
+    snackFees;
+  const allFees = [generalFees, mealFeesAmount, snackFeesAmount].reduce(
+    (acc, charge) => acc + roundTo2Decimal(charge),
+    0
+  );
+  const { payToPaid, rawSalary, rawSalaryWithoutHCHS } = isComplementaryHours
+    ? computePay(nbHours, forfait)
+    : computePay(forfait || nbHours);
   return (
-    <button
-      onClick={() => {
-        setDownloadClicked(true);
-      }}
-    >
-      Download csv
-    </button>
+    <div>
+      <button
+        onClick={() => {
+          setDownloadClicked(true);
+        }}
+      >
+        Download csv
+      </button>
+      <div>{`nombre heure: ${forfait || nbHours}`}</div>
+      <div>{`REMUNERATION BRUTE: ${rawSalary}`}</div>
+      <div>{`Rémunération brute hors hc et hs: ${rawSalaryWithoutHCHS}`}</div>
+      <div>{`SALAIRE NET MENSUEL: ${payToPaid}`}</div>
+      <div>{`Indemnité entretien: ${generalFees}`}</div>
+      <div>{`Indemnité de repas: ${mealFeesAmount + snackFeesAmount}`}</div>
+      <div>{`TOTAL INDEMNITÉS: ${allFees}`}</div>
+    </div>
   );
 };
 
@@ -324,8 +445,13 @@ export const EventList: React.FC = () => {
   const { calendar } = useCalendar();
   const { client } = useClient();
   const [events, setEvents] = React.useState<Event[]>();
-  const [calendarLimits, setCalendarLimits] =
-    React.useState<{ start: Date; end: Date; name: string }>();
+  const [calendarLimits, setCalendarLimits] = React.useState<{
+    start: Date;
+    end: Date;
+    name: string;
+    forfait?: number;
+    isComplementaryHours: boolean;
+  }>();
   React.useEffect(() => {
     if (calendar && client && calendarLimits) {
       const fetchEventList = async () => {
@@ -407,6 +533,8 @@ export const EventList: React.FC = () => {
       <EventCSVToDisplay
         events={events}
         daysOfSelectedMonth={daysOfSelectedMonth}
+        forfait={calendarLimits?.forfait}
+        isComplementaryHours={!!calendarLimits?.isComplementaryHours}
       />
     </>
   ) : calendar ? (
@@ -414,7 +542,13 @@ export const EventList: React.FC = () => {
       onSubmit={handleSubmit((form) => {
         const start = startOfDay(new Date(form.year, form.month, 1));
         const end = endOfMonth(start);
-        setCalendarLimits({ start, end, name: form.name as string });
+        setCalendarLimits({
+          start,
+          end,
+          name: form.name as string,
+          forfait: form.forfait as number,
+          isComplementaryHours: form.isComplementaryHours as boolean,
+        });
       })}
     >
       <label>
@@ -432,6 +566,18 @@ export const EventList: React.FC = () => {
       <label>
         name
         <input id="name" {...register("name")} />
+      </label>
+      <label>
+        forfait
+        <input id="forfait" {...register("forfait")} />
+      </label>
+      <label>
+        heure complémentaire
+        <input
+          id="forfait"
+          type="checkbox"
+          {...register("isComplementaryHours")}
+        />
       </label>
       <input type="submit" value="Valider" />
     </form>
