@@ -521,7 +521,16 @@ export const EventList: React.FC = () => {
     start: new Date(2020, 12, 30),
     end: new Date(2021, 11, 10),
   }).map((month) => ({ label: format(month, "MMMM"), value: getMonth(month) }));
-  const { register, handleSubmit } = useForm();
+  const now = new Date();
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      year: now.getFullYear(),
+      month: now.getMonth(),
+      name: "",
+      forfait: null as string | null,
+      isComplementaryHours: false,
+    },
+  });
   const daysOfSelectedMonth = calendarLimits
     ? eachDayOfInterval({ ...calendarLimits })
     : [];
@@ -545,8 +554,11 @@ export const EventList: React.FC = () => {
         setCalendarLimits({
           start,
           end,
-          name: form.name as string,
-          forfait: form.forfait as number,
+          name: form.name,
+          forfait:
+            form.forfait === null
+              ? undefined
+              : parseFloat(form.forfait.replace(",", ".")),
           isComplementaryHours: form.isComplementaryHours as boolean,
         });
       })}
