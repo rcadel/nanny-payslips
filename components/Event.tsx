@@ -14,6 +14,8 @@ import {
 import { utcToZonedTime } from "date-fns-tz";
 import * as React from "react";
 import { useForm } from "react-hook-form";
+import { useCalendar } from "./Calendar";
+import { useClient } from "./ClientProvider";
 import {
   baseSalaireBrutCSGRDS,
   mealFees,
@@ -35,9 +37,7 @@ import {
   txVacation,
   txVieillesseDepla,
   txVieillessePlafonne,
-} from "../pages/data";
-import { useCalendar } from "./Calendar";
-import { useClient } from "./ClientProvider";
+} from "./data";
 
 const afterNoonMealHour = 16;
 const lunchHour = 12;
