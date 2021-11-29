@@ -1,3 +1,4 @@
+import Link from "next/link";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useClient } from "./ClientProvider";
@@ -13,15 +14,9 @@ interface CalendarListResponse {
 }
 
 const Calendar: React.FC<{ calendar: Calendar }> = ({ calendar }) => {
-  const { setCalendar } = useCalendar();
   return (
-    <div
-      onClick={() => {
-        setCalendar(calendar);
-      }}
-      style={{ textDecoration: "underline", cursor: "pointer" }}
-    >
-      {calendar.summary}
+    <div>
+      <Link href={`/calendars/${calendar.id}`}>{calendar.summary}</Link>
     </div>
   );
 };
@@ -39,7 +34,6 @@ export const CalendarList: React.FC = () => {
         showDeleted: false,
         showHidden: false,
       });
-      console.log(response.result);
       setCalendars(response.result?.items);
     };
     if (isSignedIn && client) {

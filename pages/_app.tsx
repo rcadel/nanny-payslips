@@ -1,4 +1,5 @@
 import * as React from "react";
+import { CalendarProvider } from "../components/Calendar";
 import { ClientProvider } from "../components/ClientProvider";
 import "../styles/globals.css";
 
@@ -6,7 +7,9 @@ import "../styles/globals.css";
 function MyApp({ Component, pageProps }) {
   return (
     <ClientProvider>
-      <Component {...pageProps} />
+      <CalendarProvider>
+        <Component {...pageProps} />
+      </CalendarProvider>
     </ClientProvider>
   );
 }

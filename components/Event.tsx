@@ -567,7 +567,9 @@ export const EventList: React.FC = () => {
         month
         <select {...register("month")}>
           {months.map((m) => (
-            <option value={m.value}>{m.label}</option>
+            <option value={m.value} key={m.value}>
+              {m.label}
+            </option>
           ))}
         </select>
       </label>
