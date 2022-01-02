@@ -196,32 +196,39 @@ const eventToNannysDay = (event?: Event): NannysDay => {
 const roundTo2Decimal = (num: number) =>
   Math.round((num + Number.EPSILON) * 100) / 100;
 
-const computePay = (hoursMade: number, forfait?: number, vacationHours = 0) => {
-  const complementaryHoursToPay = forfait ? hoursMade - forfait : 0;
+const computePay = (
+  hoursMade: number,
+  isComplementaryHour: boolean,
+  forfait?: number
+) => {
+  const complementaryHoursToPay =
+    isComplementaryHour && forfait ? hoursMade - forfait : 0;
   const hoursToPay = forfait ? forfait : hoursMade;
   const hoursToPayAmount = hoursToPay * rawHourTarif;
   const complementaryHoursToPayAmount = complementaryHoursToPay * rawHourTarif;
   const vacationAmount = hoursToPayAmount * txVacation;
-  const vacationComplementaryHourAmount = complementaryHoursToPay * txVacation;
+  const vacationComplementaryHourAmount =
+    complementaryHoursToPayAmount * txVacation;
 
   const rawSalary =
     hoursToPayAmount +
     complementaryHoursToPayAmount +
     vacationComplementaryHourAmount +
     vacationAmount;
-  const rawSalaryWithoutHCHS = hoursToPayAmount + vacationAmount;
+  const rawSalaryWithoutHCHS =
+    hoursToPayAmount + vacationAmount + vacationComplementaryHourAmount;
   const baseRAwCSGRDS = rawSalary * baseSalaireBrutCSGRDS;
-  const maladieSolidarite = rawSalary * txMaladieSolidarite;
-  const vieillesseDeplafonnee = rawSalary * txVieillesseDepla;
-  const vieillessePlafonnee = rawSalary * txVieillessePlafonne;
-  const allocationFamilliale = rawSalary * txAllocFamilliale;
-  const accidentDutravail = rawSalary * txAccidentTravail;
-  const FNAL = rawSalary * txFNAL;
+  const maladieSolidarite = rawSalaryWithoutHCHS * txMaladieSolidarite;
+  const vieillesseDeplafonnee = rawSalaryWithoutHCHS * txVieillesseDepla;
+  const vieillessePlafonnee = rawSalaryWithoutHCHS * txVieillessePlafonne;
+  const allocationFamilliale = rawSalaryWithoutHCHS * txAllocFamilliale;
+  const accidentDutravail = rawSalaryWithoutHCHS * txAccidentTravail;
+  const FNAL = rawSalaryWithoutHCHS * txFNAL;
   const IRCEMPrevoyance = rawSalary * txIRCEMPrev;
-  const IRCEMRetraite = rawSalary * txIRCEMRetraite;
-  const CEG = rawSalary * txCEG;
-  const Assedic = rawSalary * txAssedic;
-  const formation = rawSalary * txFormation;
+  const IRCEMRetraite = rawSalaryWithoutHCHS * txIRCEMRetraite;
+  const CEG = rawSalaryWithoutHCHS * txCEG;
+  const Assedic = rawSalaryWithoutHCHS * txAssedic;
+  const formation = rawSalaryWithoutHCHS * txFormation;
   const exonerationHC = (rawSalary - rawSalaryWithoutHCHS) * txExonerationHCHS;
   const CGSRDSNonDeduc = baseRAwCSGRDS * txCSGRDS;
   const CSGDeduc = baseRAwCSGRDS * txCSGDeduc;
@@ -237,14 +244,23 @@ const computePay = (hoursMade: number, forfait?: number, vacationHours = 0) => {
     CEG,
     Assedic,
     formation,
-    exonerationHC,
+    // exonerationHC, don't know why but not take into account on excel
     CGSRDSNonDeduc,
     CSGDeduc,
   ];
-  const payToPaid =
-    rawSalary -
-    charges.reduce((acc, charge) => acc + roundTo2Decimal(charge), 0);
-  return { rawSalary, rawSalaryWithoutHCHS, payToPaid };
+  const sumCharges = charges.reduce(
+    (acc, charge) => acc + roundTo2Decimal(charge),
+    0
+  );
+
+  const payToPaid = rawSalary - sumCharges;
+  return {
+    rawSalary,
+    rawSalaryWithoutHCHS,
+    payToPaid,
+    complementaryHoursToPay,
+    sumCharges,
+  };
 };
 
 const EventCSVToDisplay: React.FC<{
@@ -404,9 +420,13 @@ const EventCSVToDisplay: React.FC<{
     (acc, charge) => acc + roundTo2Decimal(charge),
     0
   );
-  const { payToPaid, rawSalary, rawSalaryWithoutHCHS } = isComplementaryHours
-    ? computePay(nbHours, forfait)
-    : computePay(forfait || nbHours);
+  const {
+    payToPaid,
+    rawSalary,
+    rawSalaryWithoutHCHS,
+    complementaryHoursToPay,
+    sumCharges,
+  } = computePay(nbHours, isComplementaryHours, forfait);
   return (
     <div>
       <button
@@ -417,8 +437,12 @@ const EventCSVToDisplay: React.FC<{
         Download csv
       </button>
       <div>{`nombre heure: ${forfait || nbHours}`}</div>
+      {isComplementaryHours && (
+        <div>{`nombre heure compl: ${complementaryHoursToPay}`}</div>
+      )}
       <div>{`REMUNERATION BRUTE: ${rawSalary}`}</div>
       <div>{`Rémunération brute hors hc et hs: ${rawSalaryWithoutHCHS}`}</div>
+      <div>{`Total charge: ${sumCharges}`}</div>
       <div>{`SALAIRE NET MENSUEL: ${payToPaid}`}</div>
       <div>{`Indemnité entretien: ${generalFees}`}</div>
       <div>{`Indemnité de repas: ${mealFeesAmount + snackFeesAmount}`}</div>
@@ -514,10 +538,14 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
         daysOfSelectedMonth={daysOfSelectedMonth}
         forfait={
           calendarLimits?.forfait
-            ? parseInt(calendarLimits.forfait, 10)
+            ? parseFloat(calendarLimits.forfait)
             : undefined
         }
-        isComplementaryHours={!!calendarLimits?.isComplementaryHours}
+        isComplementaryHours={
+          calendarLimits
+            ? calendarLimits.isComplementaryHours === "true"
+            : false
+        }
       />
     </>
   ) : null;
