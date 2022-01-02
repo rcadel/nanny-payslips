@@ -486,9 +486,9 @@ export const EventList: React.FC = () => {
               )
             )
           : [];
-        const recurringEvtInstances = recurringEvtResponse.flatMap(
-          (recurringEvt) => recurringEvt.result?.items
-        );
+        const recurringEvtInstances = recurringEvtResponse
+          .flatMap((recurringEvt) => recurringEvt.result?.items)
+          .filter((evt) => evt?.summary?.includes(calendarLimits.name));
         const singleEvts = response.result?.items || [];
         const allEvents = [...singleEvts, ...recurringEvtInstances].reduce(
           (acc, evt) => {
