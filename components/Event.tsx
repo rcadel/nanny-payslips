@@ -518,12 +518,13 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
         }
       : undefined
   );
-  const daysOfSelectedMonth = calendarLimits
-    ? eachDayOfInterval({
-        start: new Date(parseInt(calendarLimits.start, 10)),
-        end: new Date(parseInt(calendarLimits.end, 10)),
-      })
-    : [];
+  const daysOfSelectedMonth =
+    calendarLimits && calendarLimits.start && calendarLimits.end
+      ? eachDayOfInterval({
+          start: new Date(parseInt(calendarLimits.start, 10)),
+          end: new Date(parseInt(calendarLimits.end, 10)),
+        })
+      : [];
   return events ? (
     <>
       {events.map((event) => (
