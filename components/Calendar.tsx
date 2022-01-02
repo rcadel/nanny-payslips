@@ -16,7 +16,7 @@ interface CalendarListResponse {
 const Calendar: React.FC<{ calendar: Calendar }> = ({ calendar }) => {
   return (
     <div>
-      <Link href={`/calendars/${calendar.id}`}>{calendar.summary}</Link>
+      <Link href={`/calendars/${calendar.id}/form`}>{calendar.summary}</Link>
     </div>
   );
 };

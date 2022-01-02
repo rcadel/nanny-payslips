@@ -1,11 +1,8 @@
 import {
   eachDayOfInterval,
-  eachMonthOfInterval,
-  endOfMonth,
   format,
   formatISO,
   getHours,
-  getMonth,
   isEqual,
   isValid,
   parseISO,
@@ -13,7 +10,7 @@ import {
 } from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { CalendarLimits } from "../type";
 import { useCalendar } from "./Calendar";
 import { useClient } from "./ClientProvider";
 import {
@@ -441,17 +438,12 @@ const EventCSVToDisplay: React.FC<{
   );
 };
 
-export const EventList: React.FC = () => {
+export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
+  calendarLimits,
+}) => {
   const { calendar } = useCalendar();
   const { client } = useClient();
   const [events, setEvents] = React.useState<Event[]>();
-  const [calendarLimits, setCalendarLimits] = React.useState<{
-    start: Date;
-    end: Date;
-    name: string;
-    forfait?: number;
-    isComplementaryHours: boolean;
-  }>();
   React.useEffect(() => {
     if (calendar && client && calendarLimits) {
       const fetchEventList = async () => {
@@ -464,8 +456,8 @@ export const EventList: React.FC = () => {
           showDeleted: false,
           showHiddenInvitations: false,
           singleEvents: false,
-          timeMin: formatISO(calendarLimits.start),
-          timeMax: formatISO(calendarLimits.end),
+          timeMin: formatISO(parseInt(calendarLimits.start, 10)),
+          timeMax: formatISO(parseInt(calendarLimits.end, 10)),
           q: calendarLimits.name,
         });
         const recurringEvtIds = response.result?.items
@@ -480,8 +472,8 @@ export const EventList: React.FC = () => {
                   await client.client.calendar.events.instances({
                     calendarId: calendar.id,
                     eventId: id,
-                    timeMin: formatISO(calendarLimits.start),
-                    timeMax: formatISO(calendarLimits.end),
+                    timeMin: formatISO(parseInt(calendarLimits.start, 10)),
+                    timeMax: formatISO(parseInt(calendarLimits.end, 10)),
                   })
               )
             )
@@ -517,22 +509,20 @@ export const EventList: React.FC = () => {
       fetchEventList();
     }
   }, [calendar, calendarLimits, client]);
-  const months = eachMonthOfInterval({
-    start: new Date(2020, 12, 30),
-    end: new Date(2021, 11, 10),
-  }).map((month) => ({ label: format(month, "MMMM"), value: getMonth(month) }));
-  const now = new Date();
-  const { register, handleSubmit } = useForm({
-    defaultValues: {
-      year: now.getFullYear(),
-      month: now.getMonth(),
-      name: "",
-      forfait: null as string | null,
-      isComplementaryHours: false,
-    },
-  });
+  console.log(
+    calendarLimits,
+    calendarLimits
+      ? {
+          start: new Date(calendarLimits.start),
+          end: new Date(calendarLimits.end),
+        }
+      : undefined
+  );
   const daysOfSelectedMonth = calendarLimits
-    ? eachDayOfInterval({ ...calendarLimits })
+    ? eachDayOfInterval({
+        start: new Date(parseInt(calendarLimits.start, 10)),
+        end: new Date(parseInt(calendarLimits.end, 10)),
+      })
     : [];
   return events ? (
     <>
@@ -542,58 +532,13 @@ export const EventList: React.FC = () => {
       <EventCSVToDisplay
         events={events}
         daysOfSelectedMonth={daysOfSelectedMonth}
-        forfait={calendarLimits?.forfait}
+        forfait={
+          calendarLimits?.forfait
+            ? parseInt(calendarLimits.forfait, 10)
+            : undefined
+        }
         isComplementaryHours={!!calendarLimits?.isComplementaryHours}
       />
     </>
-  ) : calendar ? (
-    <form
-      onSubmit={handleSubmit((form) => {
-        const start = startOfDay(new Date(form.year, form.month, 1));
-        const end = endOfMonth(start);
-        setCalendarLimits({
-          start,
-          end,
-          name: form.name,
-          forfait:
-            form.forfait === null
-              ? undefined
-              : parseFloat(form.forfait.replace(",", ".")),
-          isComplementaryHours: form.isComplementaryHours as boolean,
-        });
-      })}
-    >
-      <label>
-        month
-        <select {...register("month")}>
-          {months.map((m) => (
-            <option value={m.value} key={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        year
-        <input id="year" {...register("year")} />
-      </label>
-      <label>
-        name
-        <input id="name" {...register("name")} />
-      </label>
-      <label>
-        forfait
-        <input id="forfait" {...register("forfait")} />
-      </label>
-      <label>
-        heure complémentaire
-        <input
-          id="forfait"
-          type="checkbox"
-          {...register("isComplementaryHours")}
-        />
-      </label>
-      <input type="submit" value="Valider" />
-    </form>
   ) : null;
 };
