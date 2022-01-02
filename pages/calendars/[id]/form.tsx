@@ -14,7 +14,6 @@ const Calendar = () => {
   const { id } = router.query;
 
   useEffect(() => {
-    console.log(isSignedIn, client, id);
     const fetchCalendar = async () => {
       const response: {
         result: any | undefined;

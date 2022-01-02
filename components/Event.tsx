@@ -175,10 +175,6 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     timeSpend(morningArrival, morningDeparture) +
     timeSpend(noonArrival, noonDeparture) +
     timeSpend(afterNoonArrival, afterNoonDeparture);
-  console.log(
-    afterNoonDeparture,
-    !!(afterNoonDeparture && getHours(afterNoonDeparture) > afterNoonMealHour)
-  );
   return {
     morning: { arrival: morningArrival, departure: morningDeparture },
     noon: { arrival: noonArrival, departure: noonDeparture },
@@ -213,12 +209,6 @@ const computePay = (hoursMade: number, forfait?: number, vacationHours = 0) => {
     complementaryHoursToPayAmount +
     vacationComplementaryHourAmount +
     vacationAmount;
-  console.log({
-    complementaryHoursToPay,
-    hoursToPay,
-    vacationComplementaryHourAmount,
-    vacationAmount,
-  });
   const rawSalaryWithoutHCHS = hoursToPayAmount + vacationAmount;
   const baseRAwCSGRDS = rawSalary * baseSalaireBrutCSGRDS;
   const maladieSolidarite = rawSalary * txMaladieSolidarite;
@@ -401,7 +391,6 @@ const EventCSVToDisplay: React.FC<{
       0
     ) /
     (1000 * 60 * 60);
-  console.log({ nbHours });
   const nanyDays = events.map(eventToNannysDay);
   const generalFees =
     nanyDays.filter((nanyDay) => nanyDay.expense.generalFees).length *
@@ -447,7 +436,6 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
   React.useEffect(() => {
     if (calendar && client && calendarLimits) {
       const fetchEventList = async () => {
-        console.log("inside fetchEventList", calendarLimits);
         const response: {
           result: EventListResponse | undefined;
         } = await client.client.calendar.events.list({
@@ -509,15 +497,6 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
       fetchEventList();
     }
   }, [calendar, calendarLimits, client]);
-  console.log(
-    calendarLimits,
-    calendarLimits
-      ? {
-          start: new Date(calendarLimits.start),
-          end: new Date(calendarLimits.end),
-        }
-      : undefined
-  );
   const daysOfSelectedMonth =
     calendarLimits && calendarLimits.start && calendarLimits.end
       ? eachDayOfInterval({
