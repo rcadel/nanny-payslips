@@ -1,4 +1,4 @@
-import { eachMonthOfInterval, endOfMonth, getMonth } from "date-fns";
+import { addMonths, eachMonthOfInterval, endOfMonth, getMonth } from "date-fns";
 import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
 import { useRouter } from "next/router";
@@ -33,7 +33,7 @@ const Calendar = () => {
   const { register, handleSubmit } = useForm({
     defaultValues: {
       year: now.getFullYear(),
-      month: now.getMonth(),
+          month: addMonths(now, -1).getMonth(),
       name: "",
       forfait: null as string | null,
       isComplementaryHours: false,
