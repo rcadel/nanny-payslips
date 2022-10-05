@@ -2,7 +2,7 @@ import { addMonths, eachMonthOfInterval, endOfMonth, getMonth } from "date-fns";
 import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useCalendar } from "../../../components/Calendar";
 import { useClient } from "../../../components/ClientProvider";
@@ -30,21 +30,27 @@ const Calendar = () => {
     end: new Date(2021, 11, 10),
   }).map((month) => ({ label: format(month, "MMMM"), value: getMonth(month) }));
   const now = new Date();
+  const sessionFormString = sessionStorage
+    ? sessionStorage.getItem("form")
+    : undefined;
   const { register, handleSubmit } = useForm({
-    defaultValues: {
-      year: now.getFullYear(),
+    defaultValues: sessionFormString
+      ? JSON.parse(sessionFormString)
+      : {
+          year: now.getFullYear(),
           month: addMonths(now, -1).getMonth(),
-      name: "",
-      forfait: null as string | null,
-      isComplementaryHours: false,
-      id: id,
-    },
+          name: "",
+          forfait: null as string | null,
+          isComplementaryHours: false,
+          id: id,
+        },
   });
   return (
     <div>
       <h2>Paramétrer le bulletin de salaire</h2>
       <form
         onSubmit={handleSubmit((form) => {
+          sessionStorage.setItem("form", JSON.stringify(form));
           const start = startOfDay(
             new Date(form.year, form.month, 1)
           ).getTime();
