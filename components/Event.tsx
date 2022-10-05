@@ -167,8 +167,8 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     event?.end && getHours(event.end) > 12 && getHours(event.end) < 14
       ? event.end
       : undefined;
-  const afterNoonArrival = morningArrival && morningDeparture;
-  event?.start && getHours(event.start) >= 14 ? event.start : undefined;
+  const afterNoonArrival =
+    event?.start && getHours(event.start) >= 14 ? event.start : undefined;
   const afterNoonDeparture =
     event?.end && getHours(event.end) >= 14 ? event.end : undefined;
   const totalHour =
@@ -181,10 +181,7 @@ const eventToNannysDay = (event?: Event): NannysDay => {
     afternoon: { arrival: afterNoonArrival, departure: afterNoonDeparture },
     totalHour,
     expense: {
-      generalFees: !!(
-        (morningArrival || noonArrival || afterNoonArrival) &&
-        (morningDeparture || noonDeparture || afterNoonDeparture)
-      ),
+      generalFees: totalHour > 0,
       afterNoonMeal: !!(
         afterNoonDeparture && getHours(afterNoonDeparture) > afterNoonMealHour
       ),
