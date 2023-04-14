@@ -504,6 +504,7 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
         const singleEvts = response.result?.items || [];
         const allEvents = [...singleEvts, ...recurringEvtInstances].reduce(
           (acc, evt) => {
+            console.log(evt?.start?.dateTime);
             if (
               evt !== undefined &&
               evt.start?.dateTime !== undefined &&
