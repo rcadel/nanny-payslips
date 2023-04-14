@@ -455,8 +455,10 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
   const { client, setClient } = useClient();
   const [events, setEvents] = React.useState<Event[]>();
   React.useEffect(() => {
-    client.setClient((window as any).gapi);
-  }, [(window as any).gapi]);
+    if ((window as any).gapi) {
+      client.setClient((window as any).gapi);
+    }
+  }, [typeof (window as any)]);
   React.useEffect(() => {
     console.log(
       calendar,
