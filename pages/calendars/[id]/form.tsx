@@ -46,7 +46,8 @@ const Calendar = () => {
       <form
         onSubmit={handleSubmit((form) => {
           const start =
-            startOfDay(new Date(form.year, form.month, 1)).getTime() + 5000;
+            startOfDay(new Date(form.year, form.month, 1)).getTime() +
+            2 * 60 * 60 * 1000;
           const end = endOfMonth(start).getTime();
           router.push({
             pathname: "/calendars/[id]/results",
