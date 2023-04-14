@@ -452,7 +452,7 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
   calendarLimits,
 }) => {
   const { calendar } = useCalendar();
-  const { client } = useClient();
+  const { client, setClient } = useClient();
   const [events, setEvents] = React.useState<Event[]>();
   React.useEffect(() => {
     console.log(
@@ -461,6 +461,9 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
       calendarLimits,
       formatISO(parseInt(calendarLimits?.start ?? "0", 10))
     );
+    React.useEffect(() => {
+      client.setClient((window as any).gapi);
+    }, [(window as any).gapi]);
     if (calendar && client && calendarLimits) {
       const fetchEventList = async () => {
         const response: {
