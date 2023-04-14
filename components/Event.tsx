@@ -434,6 +434,7 @@ const EventCSVToDisplay: React.FC<{
       >
         Download csv
       </button>
+      <div>{`nombre de jour: ${events.length}`}</div>
       <div>{`nombre heure: ${forfait || nbHours}`}</div>
       {isComplementaryHours && (
         <div>{`nombre heure compl: ${complementaryHoursToPay}`}</div>
