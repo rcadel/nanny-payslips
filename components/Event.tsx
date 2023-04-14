@@ -3,6 +3,7 @@ import {
   format,
   formatISO,
   getHours,
+  isAfter,
   isEqual,
   isValid,
   parseISO,
@@ -504,12 +505,15 @@ export const EventList: React.FC<{ calendarLimits?: CalendarLimits }> = ({
         const singleEvts = response.result?.items || [];
         const allEvents = [...singleEvts, ...recurringEvtInstances].reduce(
           (acc, evt) => {
-            console.log(evt?.start?.dateTime);
             if (
               evt !== undefined &&
               evt.start?.dateTime !== undefined &&
               !evt.recurrence &&
-              acc.find((evtToTest) => evtToTest.id === evt.id) === undefined
+              acc.find((evtToTest) => evtToTest.id === evt.id) === undefined &&
+              isAfter(
+                parseGDate(evt.start) ?? new Date(),
+                parseInt(calendarLimits.start, 10)
+              )
             ) {
               acc.push({
                 ...evt,
