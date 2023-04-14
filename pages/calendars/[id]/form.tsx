@@ -51,7 +51,9 @@ const Calendar = () => {
       <h2>Paramétrer le bulletin de salaire</h2>
       <form
         onSubmit={handleSubmit((form) => {
-          window.sessionStorage.setItem("form", JSON.stringify(form));
+          if (window !== undefined) {
+            window.sessionStorage.setItem("form", JSON.stringify(form));
+          }
           const start = startOfDay(
             new Date(form.year, form.month, 1)
           ).getTime();
