@@ -31,7 +31,7 @@ const Calendar = () => {
   }).map((month) => ({ label: format(month, "MMMM"), value: getMonth(month) }));
   const now = new Date();
   const sessionFormString =
-    window != undefined && window.sessionStorage
+    typeof window != undefined && window.sessionStorage
       ? window.sessionStorage.getItem("form")
       : undefined;
   const { register, handleSubmit } = useForm({
@@ -51,7 +51,7 @@ const Calendar = () => {
       <h2>Paramétrer le bulletin de salaire</h2>
       <form
         onSubmit={handleSubmit((form) => {
-          if (window !== undefined) {
+          if (typeof window !== undefined) {
             window.sessionStorage.setItem("form", JSON.stringify(form));
           }
           const start = startOfDay(
