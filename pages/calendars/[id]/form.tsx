@@ -45,9 +45,9 @@ const Calendar = () => {
       <h2>Paramétrer le bulletin de salaire</h2>
       <form
         onSubmit={handleSubmit((form) => {
-          const start =
-            startOfDay(new Date(form.year, form.month, 1)).getTime() +
-            25 * 60 * 60 * 1000;
+          const start = startOfDay(
+            new Date(form.year, form.month, 1)
+          ).getTime();
           const end = endOfMonth(start).getTime();
           router.push({
             pathname: "/calendars/[id]/results",
