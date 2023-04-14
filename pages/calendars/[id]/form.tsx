@@ -30,30 +30,21 @@ const Calendar = () => {
     end: new Date(2021, 11, 10),
   }).map((month) => ({ label: format(month, "MMMM"), value: getMonth(month) }));
   const now = new Date();
-  const sessionFormString =
-    typeof window != undefined && window.sessionStorage
-      ? window.sessionStorage.getItem("form")
-      : undefined;
   const { register, handleSubmit } = useForm({
-    defaultValues: sessionFormString
-      ? JSON.parse(sessionFormString)
-      : {
-          year: now.getFullYear(),
-          month: addMonths(now, -1).getMonth(),
-          name: "",
-          forfait: null as string | null,
-          isComplementaryHours: false,
-          id: id,
-        },
+    defaultValues: {
+      year: now.getFullYear(),
+      month: addMonths(now, -1).getMonth(),
+      name: "",
+      forfait: null as string | null,
+      isComplementaryHours: false,
+      id: id,
+    },
   });
   return (
     <div>
       <h2>Paramétrer le bulletin de salaire</h2>
       <form
         onSubmit={handleSubmit((form) => {
-          if (typeof window !== undefined) {
-            window.sessionStorage.setItem("form", JSON.stringify(form));
-          }
           const start = startOfDay(
             new Date(form.year, form.month, 1)
           ).getTime();
